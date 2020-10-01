@@ -14,6 +14,13 @@ function Book(name, author, read) {
 // Array to store our books
 const myLibrary = [];
 
+// Checking if local storage contains any books we need to load
+document.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('books') !== null) {
+    displayBooks(JSON.parse(localStorage.getItem('books')));
+  }
+});
+
 // Function to display books
 function displayBooks(arr) {
   // So, if I don't do this then the function keeps adding more books to the Document Object Model(DOM).
@@ -74,8 +81,14 @@ submitBtn.addEventListener('click', () => {
     // But since this isn't a big project this works fine
     let book = new Book(bookName.value, bookAuthor.value, readBool.checked);
     myLibrary.push(book);
+
+    // Adding books to local storage
+    localStorage.setItem('books', JSON.stringify(myLibrary));
     clearFields();
-    displayBooks(myLibrary);
+
+    // This can be done in a better way
+    // I retrieve the array from the localstorage and send it straight to displayBook function
+    displayBooks(JSON.parse(localStorage.getItem('books')));
   }
 });
 
@@ -93,6 +106,26 @@ function deleteBook() {
       let bookTitle = e.target.parentElement.parentElement.getAttribute(
         'data-bookID'
       );
+
+      // Okay so this thing of checking of book name is because i didn't add a unique ID to each book
+      // Which you should do if you are making your own library
+      // I'm sorry this was hacked together
+      // Here we grab the name of the book using DOM Manipulation
+      let bookName =
+        e.target.parentElement.parentElement.firstElementChild.textContent;
+
+      // Then we get the array from local storage
+      const localBookStr = JSON.parse(localStorage.getItem('books'));
+
+      // Iterate through the array and remove the book if it meets the condition
+      localBookStr.forEach((book, index) => {
+        if (book.name === bookName) {
+          localBookStr.splice(index, 1);
+        }
+      });
+
+      // Then add the new array to localstorage
+      localStorage.setItem('books', JSON.stringify(localBookStr));
 
       // The argument could have been shorter. Yes
       // I removed the element from the Document Object Model(DOM).
@@ -118,6 +151,30 @@ function updateBook() {
       let bookIndex = e.target.parentElement.parentElement.getAttribute(
         'data-bookID'
       );
+
+      // Same process as deleting books
+      // Grab the name
+      // Retrieve array
+      // Iterate through array
+      // If it matches, we update the read value
+      let bookName =
+        e.target.parentElement.parentElement.firstElementChild.textContent;
+
+      const localBookStr = JSON.parse(localStorage.getItem('books'));
+      localBookStr.forEach((book, index) => {
+        if (book.name === bookName) {
+          switch (book.read) {
+            case true:
+              book.read = false;
+              break;
+            case false:
+              book.read = true;
+            default:
+              break;
+          }
+        }
+      });
+      localStorage.setItem('books', JSON.stringify(localBookStr));
 
       // Once we have the bookID we can check its current status with an IF-Else IF
       // This can be done using Switch statements, which would be much cleaner
